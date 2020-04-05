@@ -1,26 +1,31 @@
 import React from 'react';
-import logo from './logo.svg';
-import './App.css';
 
-function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+import { createBrowserHistory } from "history";
+import { Router, Switch, Route } from "react-router-dom";
+
+import { PrivateRoute } from './components/PrivateRoute';
+
+import Layout from './pages/Layout';
+import SignIn from './pages/SignIn';
+import SignUp from './pages/SignUp';
+import ForgotPassword from './pages/ForgotPassword';
+
+
+const App = () => {
+    const history = createBrowserHistory();
+
+    return (
+        <div className="App">
+            <Router history={history}>
+                <Switch>
+                    <Route path="/signin" component={SignIn} />
+                    <Route path="/signup" component={SignUp} />
+                    <Route path="/forgot_password" component={ForgotPassword} />
+                    <PrivateRoute path="/" component={Layout} />
+                </Switch>
+            </Router>
+        </div>
+    );
 }
 
 export default App;

@@ -1,0 +1,14 @@
+# For all
+.git
+.idea
+.vscode
+.env
+.env.default
+README.me
+.dockerignore
+Dockerfile
+# Project specifics
+node_modules
+build
+yarn-error.log
+yarn-debug.log

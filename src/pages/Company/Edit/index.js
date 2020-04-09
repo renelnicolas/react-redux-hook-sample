@@ -80,7 +80,7 @@ const CompanyEdit = (props) => {
     }, [])
 
     useEffect(() => {
-        if (match.params.hasOwnProperty("id") && 0 < match.params.id) {
+        if (0 < match.params.id) {
             ApiCompany.getEntity(match.params.id)
                 .then(entity => {
                     if (false === entity) {
@@ -96,7 +96,7 @@ const CompanyEdit = (props) => {
             .then(res => {
                 setCountries(res.entities);
             });
-    }, [match.params]);
+    }, [match.params.id]);
 
     const handleInputChange = name => e => {
         const { value } = e.target;
@@ -113,7 +113,7 @@ const CompanyEdit = (props) => {
     const handleSelectChange = name => e => {
         const { value } = e.target;
 
-        setBtnDisabled(!validateField(name, { ...state, [name]: { value: { ...(new CountryEntity()), id: value }, required: state[name].required } }));
+        setBtnDisabled(!validateField(name, { ...state, [name]: { value: (new CountryEntity({id: value})), required: state[name].required } }));
     };
 
     const handleSubmit = (event) => {
@@ -331,7 +331,10 @@ const CompanyEdit = (props) => {
                                 onChange={handleSelectChange('country')}
                                 required
                                 select
+                                // eslint-disable-next-line react/jsx-sort-props
                                 SelectProps={{ native: true }}
+                                // https://material-ui.com/components/text-fields/#shrink
+                                InputLabelProps={{ shrink: true }}
                                 value={state.country.value.id || ''}
                                 variant="outlined"
                             >

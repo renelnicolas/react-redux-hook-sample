@@ -76,7 +76,7 @@ const UserProfil = (props) => {
     }, [])
 
     useEffect(() => {
-        ApiUser.getEntity(currentUser.id)
+        ApiUser.getProfil(currentUser.id)
             .then(entity => {
                 if (false === entity) {
                     // flash message
@@ -103,7 +103,7 @@ const UserProfil = (props) => {
     const handleSelectChange = name => e => {
         const { value } = e.target;
 
-        const entity = new CountryEntity(value);
+        const entity = new CountryEntity({id: value});
 
         setBtnDisabled(!validateField(name, { ...state, [name]: { value: entity, required: state[name].required } }));
     };
@@ -197,7 +197,7 @@ const UserProfil = (props) => {
         <Card className={classes.root}>
             <form autoComplete="off" noValidate>
                 <CardHeader
-                    title="User"
+                    title="Your Profile"
                 />
 
                 <Divider />
@@ -280,6 +280,8 @@ const UserProfil = (props) => {
                                 value={state.country.value.id || ''}
                                 variant="outlined"
                             >
+                                <option value />
+
                                 {countries.map((row, index) => (
                                     <option key={`${index}-${row.id}`} value={row.id}>{row.name} {row.Iso}</option>
                                 ))}

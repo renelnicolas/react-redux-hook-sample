@@ -21,4 +21,8 @@ export default class EntityUser {
         password: true,
         password_validation: true,
     }
+
+    constructor(initial = {}) {
+        Object.assign(this, initial);
+    }
 }

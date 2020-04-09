@@ -1,5 +1,4 @@
 import Country from "./Country";
-import { isEmpty } from '../_helpers/utils'
 
 export default class Company {
     id = null;
@@ -21,20 +20,8 @@ export default class Company {
         enabled: true
     }
 
-    constructor(company) {
-        if (!isEmpty(company)) {
-            this.id = company.id;
-            this.name = company.name;
-            this.contact_email = company.contact_email;
-            this.rcs = company.rcs;
-            this.vat = company.vat;
-            this.address = company.address;
-            this.city = company.city;
-            this.zip_code = company.zip_code;
-            this.country = company.country;
-            this.phone = company.phone;
-            this.enabled = company.enabled;
-        }
+    constructor(initial = {}) {
+        Object.assign(this, initial);
 
         this.storage_at = new Date();
     }

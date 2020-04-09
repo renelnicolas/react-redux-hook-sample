@@ -79,9 +79,6 @@ const UserEdit = (props) => {
     const [companiesDisabled] = useState(!currentUser.roles.includes('ADMIN'));
     const [btnDisabled, setBtnDisabled] = useState(true);
 
-
-    console.log(process.env);
-
     // call once per loading page
     useEffect(() => {
         dispatch(allActions.breadcrumbActions.changeView(breadcrumb))
@@ -89,7 +86,7 @@ const UserEdit = (props) => {
     }, [])
 
     useEffect(() => {
-        if (match.params.hasOwnProperty("id") && 0 < match.params.id) {
+        if (0 < match.params.id) {
             ApiUser.getEntity(match.params.id)
                 .then(entity => {
                     if (false === entity) {
@@ -117,7 +114,7 @@ const UserEdit = (props) => {
                     setCompanies([res]);
                 });
         }
-    }, [match.params, currentUser]);
+    }, [match.params.id, currentUser]);
 
     // --> EVENT
 
@@ -140,10 +137,10 @@ const UserEdit = (props) => {
 
         switch (name) {
             case 'country':
-                entity = new CountryEntity(value);
+                entity = new CountryEntity({id : value});
                 break;
             case 'company':
-                entity = new CompanyEntity(value);
+                entity = new CompanyEntity({id : value});
                 break;
             default:
                 // unknown to update
@@ -336,8 +333,10 @@ const UserEdit = (props) => {
                                 value={state.country.value.id || ''}
                                 variant="outlined"
                             >
+                                <option value />
+
                                 {countries.map((row, index) => (
-                                    <option key={`${index}-${row.id}`} value={row.id}>{row.name} {row.Iso}</option>
+                                    <option key={`${index}-${row.id}`} value={row.id}>{row.name} {row.iso}</option>
                                 ))}
                             </TextField>
                         </Grid>

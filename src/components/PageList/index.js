@@ -97,7 +97,9 @@ const PageList = (props) => {
             .then(res => {
                 setCount(res.counter);
                 setIndexloaded({ ...indexloaded, [page * rowsPerPage]: true })
+                setState([...state, ...res.entities])
             })
+        // eslint-disable-next-line
     }, [endpoint, page, rowsPerPage, search]);
 
     useEffect(() => {
@@ -111,7 +113,7 @@ const PageList = (props) => {
     };
 
     const handleClickDisabled = async (item) => {
-        endpoint.disableendpoint(item)
+        endpoint.disabled(item.id, !item.enabled)
             .then(res => {
                 if (!res) {
                     // flash message

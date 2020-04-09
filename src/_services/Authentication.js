@@ -8,7 +8,7 @@ import EntityUserSignIn from '../_models/UserSignIn'
 export default class Authentication extends AbstractService {
 
 	static signIn = async (credentials) => {
-		const url = `${this.getApiDomain()}/api/v1/signin`
+		const url = `${this.getApiDomain()}/signin`
 
 		let user = false;
 
@@ -27,7 +27,7 @@ export default class Authentication extends AbstractService {
 	}
 
 	static loginCheck = async (user) => {
-		const url = `${this.getApiDomain()}/api/v1/login_check`
+		const url = `${this.getApiDomain()}/login_check`
 
 		let ok = false;
 
@@ -45,7 +45,7 @@ export default class Authentication extends AbstractService {
 	}
 
 	static forgotPassword = async (email) => {
-		const url = `${this.getApiDomain()}/api/v1/forgot_password`
+		const url = `${this.getApiDomain()}/forgot_password`
 
 		let ok = false;
 
@@ -63,7 +63,7 @@ export default class Authentication extends AbstractService {
 	}
 
 	static signUp = async (user) => {
-		const url = `${this.getApiDomain()}/api/v1/signup`
+		const url = `${this.getApiDomain()}/signup`
 
 		let ok = false;
 

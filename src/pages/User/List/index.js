@@ -5,8 +5,9 @@ import PageList from '../../../components/PageList'
 import ApiUser from '../../../_services/User';
 
 const columns = [
-    { id: 'username', label: 'Username', minWidth: 80 },
-    { id: 'email', label: 'Contact', minWidth: 80 },
+    { id: 'email', label: 'Email', minWidth: 80 },
+    { id: 'firstName', label: 'FirstName', minWidth: 80 },
+    { id: 'lastName', label: 'LastName', minWidth: 80 },
     { id: 'ACTIONS', label: 'Actions', minWidth: 50, align: 'center' },
 ];
 

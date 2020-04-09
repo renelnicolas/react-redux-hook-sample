@@ -49,6 +49,24 @@ export default class User extends AbstractService {
 		return item;
 	}
 
+	static getProfil = async (id) => {
+		const url = `${this.getApiDomain()}/api/v1/profil`
+
+		let item = new UserEntity();
+
+		await ajaxRequest().get(url)
+			.then(res => {
+				if (200 === res.status) {
+					item = new UserEntity(res.data);
+				}
+			})
+			.catch(error => {
+				console.error("getEntity > ", error.response)
+			});
+
+		return item;
+	}
+
 	static setEntity = async (entity) => {
 		const url = `${this.getApiDomain()}/api/v1/user`
 
@@ -79,12 +97,12 @@ export default class User extends AbstractService {
 		return item;
 	}
 
-	static disabled = async (id, status) => {
+	static disabled = async (id, enabled) => {
 		const url = `${this.getApiDomain()}/api/v1/user/${id}`
 
 		let item = false;
 
-		await ajaxRequest().put(url, status)
+		await ajaxRequest().put(url, { enabled: enabled })
 			.then(res => {
 				if (200 === res.status) {
 					item = new UserEntity(res.data);

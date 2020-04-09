@@ -13,10 +13,6 @@ export default class Company extends AbstractService {
     const queryString = isEmpty(filters) ? '' : '?' + qs.stringify(filters);
     const url = `${this.getApiDomain()}/api/v1/companies${queryString}`;
 
-
-    console.log(url);
-
-
     let items = {
       counter: 0,
       entities: [],
@@ -83,12 +79,12 @@ export default class Company extends AbstractService {
     return item;
   }
 
-  static disabled = async (id, status) => {
+  static disabled = async (id, enabled) => {
     const url = `${this.getApiDomain()}/api/v1/company/${id}`
 
     let item = false;
 
-    await ajaxRequest().put(url, status)
+    await ajaxRequest().put(url, { enabled: enabled })
       .then(res => {
         if (200 === res.status) {
           item = new CompanyEntity(res.data);

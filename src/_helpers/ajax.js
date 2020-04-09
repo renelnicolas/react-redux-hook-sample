@@ -4,11 +4,15 @@ import { getItem as storageGetItem } from './storage'
 
 const REQUEST_TIMEOUT = 1500;
 
-const user = storageGetItem('user');
+let user = storageGetItem('user');
 
 export const ajaxRequest = () => {
     let headers = {
         'Content-Type': 'application/json'
+    }
+
+    if (null === user) {
+        user = storageGetItem('user');
     }
 
     if (user && user.hasOwnProperty("token")) {

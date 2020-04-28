@@ -137,10 +137,10 @@ const UserEdit = (props) => {
 
         switch (name) {
             case 'country':
-                entity = new CountryEntity({id : value});
+                entity = new CountryEntity({ id: value });
                 break;
             case 'company':
-                entity = new CompanyEntity({id : value});
+                entity = new CompanyEntity({ id: value });
                 break;
             default:
                 // unknown to update

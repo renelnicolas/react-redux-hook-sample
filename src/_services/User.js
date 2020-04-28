@@ -39,7 +39,7 @@ export default class User extends AbstractService {
 		await ajaxRequest().get(url)
 			.then(res => {
 				if (200 === res.status) {
-					item = new UserEntity(res.data);
+					item = new UserEntity(res.data.entity);
 				}
 			})
 			.catch(error => {

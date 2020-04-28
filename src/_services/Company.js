@@ -8,7 +8,6 @@ import { isEmpty } from '../_helpers/utils'
 
 export default class Company extends AbstractService {
 
-
   static getEntities = async (filters) => {
     const queryString = isEmpty(filters) ? '' : '?' + qs.stringify(filters);
     const url = `${this.getApiDomain()}/api/v1/companies${queryString}`;
@@ -39,7 +38,7 @@ export default class Company extends AbstractService {
     await ajaxRequest().get(url)
       .then(res => {
         if (200 === res.status) {
-          item = new CompanyEntity(res.data);
+          item = new CompanyEntity(res.data.entity);
         }
       })
       .catch(error => {

@@ -1,9 +1,18 @@
 import BusinessIcon from '@material-ui/icons/Business';
 import GroupIcon from '@material-ui/icons/Group';
 import Person from "@material-ui/icons/Person";
-
+import ListIcon from '@material-ui/icons/List';
+//import LoopIcon from '@material-ui/icons/Loop';
+import OpenInBrowserIcon from '@material-ui/icons/OpenInBrowser';
+// import SpeedIcon from '@material-ui/icons/Speed';
 
 import Home from '../pages/Home';
+
+import QueueTypeList from '../pages/QueueType/List';
+
+import QueueSchedulerList from '../pages/QueueScheduler/List';
+import QueueSchedulerEdit from '../pages/QueueScheduler/Edit';
+
 
 import CompanyList from '../pages/Company/List';
 import CompanyEdit from '../pages/Company/Edit';
@@ -22,6 +31,38 @@ export const routes = [
         component: Home,
         roles: ['USER']
     },
+    {
+        path: "/queues",
+        name: "Queues",
+        exact: true,
+        icon: ListIcon,
+        component: QueueTypeList,
+        roles: ['ADMIN']
+    },
+
+    {
+        path: "/queue/schedulers",
+        name: "Scheduler",
+        exact: true,
+        icon: OpenInBrowserIcon,
+        component: QueueSchedulerList,
+        roles: ['ADMIN']
+    },
+    {
+        path: "/queue/scheduler",
+        name: "Scheduler",
+        exact: true,
+        component: QueueSchedulerEdit,
+        roles: ['ADMIN']
+    },
+    {
+        path: "/queue/scheduler/:id",
+        name: "Scheduler",
+        exact: true,
+        component: QueueSchedulerEdit,
+        roles: ['ADMIN']
+    },
+
     {
         path: "/companies",
         name: "Companies",

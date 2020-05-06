@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import { useHistory } from 'react-router-dom';
 
 import PropTypes from 'prop-types';
@@ -23,6 +23,7 @@ import {
 } from '@material-ui/core';
 
 import {
+    FlashOn as FlashOnIcon,
     Delete as DeleteIcon,
     Edit as EditIcon,
     CheckCircleOutline as CheckCircleOutlineIcon,
@@ -56,17 +57,29 @@ const useStyles = makeStyles(theme => ({
             margin: theme.spacing(0),
         }
     },
+    buttonLaunch: {
+        margin: theme.spacing(0),
+        "& .MuiButton-startIcon": {
+            margin: theme.spacing(0),
+        },
+        '&:hover': {
+            backgroundColor: "#ffab00",
+            color: '#e65100'
+        },
+        background: "#ffd600",
+        color: 'white'
+    },
 }));
 
-const PageList = (props) => {
+const PageList = ({ className, canEdit, canDisable, canLaunch, canDelete, labelCount, labelAdd, columns, endpoint, match, editSamePage }) => {
     const classes = useStyles();
-
-    const { className, canEdit, canDisable, canDelete, labelCount, labelAdd, columns, endpoint, match } = props;
 
     const dispatch = useDispatch();
     const history = useHistory();
 
-    const breadcrumb = new BreadcrumbPath(match.url, [{ path: '/companies', name: labelCount }])
+    const breadcrumb = new BreadcrumbPath(match.url, [{ path: '/' + labelCount.toLowerCase(), name: labelCount }])
+
+    const resetSearch = useSelector(state => state.entity.reset);
 
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(10);
@@ -80,6 +93,13 @@ const PageList = (props) => {
         dispatch(allActions.breadcrumbActions.changeView(breadcrumb))
         // eslint-disable-next-line
     }, [])
+
+    // call once per loading page
+    useEffect(() => {
+        if (resetSearch) {
+            reset();
+        }
+    }, [resetSearch])
 
     const load = useCallback(async (indexloaded) => {
         // Check if endpoint is defined
@@ -95,9 +115,11 @@ const PageList = (props) => {
         // TODO : Use QueryFilter() => rebuild logic
         endpoint.getEntities({ offset: page * rowsPerPage, limit: rowsPerPage, page: page, search: search })
             .then(res => {
+                const entities = res.entities ? res.entities : [];
+
                 setCount(res.counter);
                 setIndexloaded({ ...indexloaded, [page * rowsPerPage]: true })
-                setState([...state, ...res.entities])
+                setState([...state, ...entities])
             })
         // eslint-disable-next-line
     }, [endpoint, page, rowsPerPage, search]);
@@ -107,10 +129,29 @@ const PageList = (props) => {
     }, [load, indexloaded]);
 
     const handleClickEdit = (item) => {
+        if (editSamePage) {
+            dispatch(allActions.entityActions.selectEntity(item))
+            return;
+        }
+
         const path = labelAdd.toLowerCase() + (item ? `/` + item.id : '');
 
         history.push(path);
     };
+
+    const handleLaunchEdit = async (item) => {
+        if (!endpoint.launch) {
+            return;
+        }
+
+        endpoint.launch(item.id)
+            .then(res => {
+                if (!res) {
+                    // flash message
+                    return
+                }
+            })
+    }
 
     const handleClickDisabled = async (item) => {
         endpoint.disabled(item.id, !item.enabled)
@@ -166,7 +207,7 @@ const PageList = (props) => {
 
         setSearch(value);
 
-        if (value.length < 3) {
+        if (0 !== value.length && value.length < 3) {
             return;
         }
 
@@ -229,7 +270,7 @@ const PageList = (props) => {
                         </TableHead>
 
                         <TableBody>
-                            {state.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row, index) => {
+                            {state && state.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row, index) => {
                                 return (
                                     <TableRow hover role="checkbox" tabIndex={-1} key={row.id}>
                                         {columns.map(column => {
@@ -244,6 +285,15 @@ const PageList = (props) => {
                                                                     className={classes.button}
                                                                     startIcon={<EditIcon />}
                                                                     onClick={() => handleClickEdit(row)}
+                                                                >
+                                                                    {""}
+                                                                </Button>}
+
+                                                                {canLaunch && <Button
+                                                                    variant="contained"
+                                                                    className={classes.buttonLaunch}
+                                                                    startIcon={<FlashOnIcon />}
+                                                                    onClick={() => handleLaunchEdit(row)}
                                                                 >
                                                                     {""}
                                                                 </Button>}

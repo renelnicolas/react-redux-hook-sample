@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch } from 'react-redux'
 
-
 import { makeStyles } from '@material-ui/core/styles';
 
 import {
@@ -89,7 +88,7 @@ const Row = ({ row }) => {
                 { content: getExpansionPanelDetails(row.headers), summary: "Headers" },
                 { content: getExpansionPanelDetails(row.remote_address, true), summary: "Remote Address" },
                 { content: getExpansionPanelDetails(row.timing, true), summary: "Timing" },
-                { content: getCookies(row.cookies), summary: "Cookies" },
+                { content: getCookies(row.cookies), summary: `Cookies (${Array.isArray(row.cookies) ? row.cookies.length : '-'})` },
             ];
 
             setPanels(panels)
@@ -113,10 +112,10 @@ const Row = ({ row }) => {
                 <TableCell align="center">{row.method}</TableCell>
                 <TableCell align="center">{row.resource_type}</TableCell>
                 <TableCell align="center">{Array.isArray(row.cookies) ? row.cookies.length : 0}</TableCell>
-                {/* <TableCell>{row.timing}</TableCell> */}
+                <TableCell align="right">{row.timing.time.toFixed(3)}&nbsp;ms</TableCell>
             </TableRow>
             <TableRow>
-                <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={6}>
+                <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={7}>
                     <Collapse in={open} timeout="auto" unmountOnExit>
                         <Box margin={1}>
                             <ExpansionBox panels={panels} />
@@ -133,7 +132,7 @@ const useStyles = makeStyles(theme => ({
         width: '100%',
     },
     tableWrapper: {
-        maxHeight: 680,
+        // maxHeight: 680,
         overflow: 'auto',
         height: "100%",
     },
@@ -168,7 +167,7 @@ const columns = [
     { id: 'method', label: 'Method', minWidth: 80, align: 'center' },
     { id: 'resource_type', label: 'Resource Type', minWidth: 80, align: 'center' },
     { id: 'cookies', label: 'Cookies', minWidth: 80, align: 'center' },
-    // { id: 'timing', label: 'Timing', minWidth: 80 },
+    { id: 'timing', label: 'Timing', minWidth: 80 },
 ];
 
 const Details = ({ match }) => {

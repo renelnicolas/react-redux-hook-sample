@@ -60,7 +60,7 @@ const useStyles = makeStyles(theme => ({
     },
 }));
 
-const QueueSchedulerEdit = (props) => {
+const Edit = (props) => {
     const classes = useStyles();
 
     const { match } = props;
@@ -295,4 +295,4 @@ const QueueSchedulerEdit = (props) => {
     );
 };
 
-export default QueueSchedulerEdit;
+export default Edit;

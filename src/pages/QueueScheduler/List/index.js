@@ -7,9 +7,12 @@ import { makeStyles } from '@material-ui/core/styles';
 import { green } from '@material-ui/core/colors';
 
 import {
+    Box,
     Button,
     ButtonGroup,
+    Collapse,
     Grid,
+    IconButton,
     Typography,
     Paper,
     Table,
@@ -21,6 +24,9 @@ import {
 } from '@material-ui/core';
 
 import {
+    KeyboardArrowDown as KeyboardArrowDownIcon,
+    KeyboardArrowUp as KeyboardArrowUpIcon,
+    Visibility as VisibilityIcon,
     FlashOn as FlashOnIcon,
     Delete as DeleteIcon,
     Edit as EditIcon,
@@ -28,15 +34,254 @@ import {
     NotInterested as NotInterestedIcon
 } from '@material-ui/icons';
 
+// Custom components
 import SearchInput from '../../../components/SearchInput'
+import CollapsibleTable from '../../../components/CollapsibleTable'
 
 import BreadcrumbPath from '../../../_models/BreadcrumbPath'
 
 // API
-import endpoint from '../../../_services/QueueScheduler';
+import ApiQueueScheduler from '../../../_services/QueueScheduler';
+import ApiQueueSchedulerHistory from '../../../_services/QueueSchedulerHistory';
 
 // REDUX ACTIONS
 import allActions from '../../../_actions/index';
+
+const useRowStyles = makeStyles(theme => ({
+    root: {
+        '& > *': {
+            borderBottom: 'unset',
+        },
+    },
+    button: {
+        margin: theme.spacing(0),
+        "& .MuiButton-startIcon": {
+            margin: theme.spacing(0),
+        }
+    },
+    buttonLaunch: {
+        margin: theme.spacing(0),
+        "& .MuiButton-startIcon": {
+            margin: theme.spacing(0),
+        },
+        '&:hover': {
+            backgroundColor: "#ffab00",
+            color: '#e65100'
+        },
+        background: "#ffd600",
+        color: 'white'
+    },
+    buttonShow: {
+        margin: theme.spacing(0),
+        "& .MuiButton-startIcon": {
+            margin: theme.spacing(0),
+        },
+        '&:hover': {
+            backgroundColor: "#ffe0b2",
+            color: '#fff3e0'
+        },
+        background: "#ffcc80",
+        color: '#fff3e0'
+    }
+}));
+
+const Row = ({ row }) => {
+    const classes = useRowStyles();
+
+    const [open, setOpen] = useState(false);
+    const [state, setState] = useState([]);
+
+    const history = useHistory();
+
+    // call once per loading page
+    useEffect(() => {
+        if (open) {
+            // Check if ApiQueueScheduler is defined
+            if (!ApiQueueSchedulerHistory) {
+                return;
+            }
+
+            ApiQueueSchedulerHistory.getHistory(row.external_id, {})
+                .then(res => {
+                    setState(res ? res : [])
+                })
+        } else {
+            setState([])
+        }
+    }, [row, open])
+
+    const handleClickEdit = (item) => {
+        const path = item.id ? `/${item.id}` : '';
+
+        history.push(`/queue/scheduler${path}`);
+    }
+
+    const handleLaunchEdit = async (item) => {
+        if (!ApiQueueScheduler.launch) {
+            return;
+        }
+
+        ApiQueueScheduler.launch(item.id)
+            .then(res => {
+                if (!res) {
+                    // flash message
+                    return
+                }
+            })
+    }
+
+    const handleClickDisabled = async (item) => {
+        ApiQueueScheduler.disabled(item.id, !item.enabled)
+            .then(res => {
+                if (!res) {
+                    // flash message
+                    return
+                }
+
+                const newState = state.map(row => {
+                    if (item.id === row.id) {
+                        if (row.hasOwnProperty('enabled')) {
+                            row.enabled = !item.enabled;
+                        } else {
+                            row.status = !item.status;
+                        }
+                    }
+
+                    return row;
+                });
+
+                setState(newState); // load();
+            })
+    };
+
+    const handleClickDelete = (item) => {
+        ApiQueueScheduler.delete(item.id)
+            .then(res => {
+                if (!res) {
+                    // flash message
+                    return
+                }
+
+                const newState = state.filter(row => row.id !== item.id);
+
+                setState(newState); // load();
+            })
+    };
+
+    const handleClickShow = (item) => {
+        history.push(`/queue/scheduler/show/${item.work_id}`);
+    };
+
+    return (
+        <React.Fragment>
+            <TableRow className={classes.root}>
+                <TableCell>
+                    <IconButton aria-label="expand row" size="small" onClick={() => setOpen(!open)}>
+                        {open ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
+                    </IconButton>
+                </TableCell>
+                <TableCell component="th" scope="row">
+                    {row.name}
+                </TableCell>
+                <TableCell>{row.url}</TableCell>
+                <TableCell>{row.queue_type.name}</TableCell>
+                <TableCell align="center">
+                    <ButtonGroup color="primary" size="small" aria-label="small outlined button group">
+                        <Button
+                            variant="contained"
+                            color="primary"
+                            className={classes.button}
+                            startIcon={<EditIcon />}
+                            onClick={() => handleClickEdit(row)}
+                        >
+                            {""}
+                        </Button>
+
+                        <Button
+                            variant="contained"
+                            className={classes.buttonLaunch}
+                            startIcon={<FlashOnIcon />}
+                            onClick={() => handleLaunchEdit(row)}
+                        >
+                            {""}
+                        </Button>
+
+                        <Button
+                            variant="contained"
+                            color="inherit"
+                            className={classes.button}
+                            startIcon={row.enabled || row.status ? <CheckCircleOutlineIcon style={{ color: green[500] }} /> : <NotInterestedIcon color="secondary" />}
+                            onClick={() => handleClickDisabled(row)}
+                        >
+                            {""}
+                        </Button>
+
+                        <Button
+                            variant="contained"
+                            color="secondary"
+                            className={classes.button}
+                            startIcon={<DeleteIcon />}
+                            onClick={() => handleClickDelete(row)}
+                        >
+                            {""}
+                        </Button>
+                    </ButtonGroup>
+                </TableCell>
+            </TableRow>
+            <TableRow>
+                <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={6}>
+                    <Collapse in={open} timeout="auto" unmountOnExit>
+                        <Box margin={1}>
+                            <Typography variant="h6" gutterBottom component="div">
+                                History
+                            </Typography>
+
+                            <Table size="small" aria-label="purchases">
+                                <TableHead>
+                                    <TableRow>
+                                        <TableCell>Date</TableCell>
+                                        <TableCell>Work ID</TableCell>
+                                        <TableCell align="center">Requests</TableCell>
+                                        <TableCell align="center">LoadTime</TableCell>
+                                        <TableCell align="center">Cookies</TableCell>
+                                        <TableCell align="center">Domains</TableCell>
+                                        <TableCell align="center">Show</TableCell>
+                                    </TableRow>
+                                </TableHead>
+
+                                <TableBody>
+                                    {state && state.map((historyRow) => (
+                                        <TableRow key={historyRow.at}>
+                                            <TableCell component="th" scope="row">
+                                                {new Date(historyRow.at).toLocaleDateString()}
+                                            </TableCell>
+                                            <TableCell>{historyRow.work_id}</TableCell>
+                                            <TableCell align="center">{Number(historyRow.request_count)}</TableCell>
+                                            <TableCell align="right">{Number(historyRow.load_time)}&nbsp;ms</TableCell>
+                                            <TableCell align="center">{Array.isArray(historyRow.cookies) ? historyRow.cookies.length : 0}</TableCell>
+                                            <TableCell align="center">{Array.isArray(historyRow.domains) ? historyRow.domains.length : 0}</TableCell>
+                                            <TableCell align="center">
+                                                <Button
+                                                    variant="contained"
+                                                    color="secondary"
+                                                    className={classes.buttonShow}
+                                                    startIcon={<VisibilityIcon />}
+                                                    onClick={() => handleClickShow(historyRow)}
+                                                >
+                                                    {""}
+                                                </Button>
+                                            </TableCell>
+                                        </TableRow>
+                                    ))}
+                                </TableBody>
+                            </Table>
+                        </Box>
+                    </Collapse>
+                </TableCell>
+            </TableRow>
+        </React.Fragment>
+    );
+}
 
 const useStyles = makeStyles(theme => ({
     root: {
@@ -75,13 +320,13 @@ const useStyles = makeStyles(theme => ({
 const columns = [
     { id: 'name', label: 'Name', minWidth: 80 },
     { id: 'url', label: 'URL', minWidth: 80 },
-    { id: 'Enabled', label: 'Enabled', minWidth: 80 },
-    { id: 'queue_type.name', label: 'QueueName', minWidth: 80 },
-    { id: 'last_schedule_at', label: 'LastScheduleAt', minWidth: 80 },
+    // { id: 'Enabled', label: 'Enabled', minWidth: 80 },
+    { id: 'queue_type.name', label: 'QueueName', minWidth: 80, maxWidth: '180px' },
+    // { id: 'last_schedule_at', label: 'LastScheduleAt', minWidth: 80 },
     { id: 'ACTIONS', label: 'Actions', minWidth: 50, align: 'center' },
 ];
 
-const QueueSchedulerList = ({ className, match }) => {
+const List = ({ className, match }) => {
     const classes = useStyles();
 
     const dispatch = useDispatch();
@@ -112,8 +357,8 @@ const QueueSchedulerList = ({ className, match }) => {
     }, [resetSearch])
 
     const load = useCallback(async (indexloaded) => {
-        // Check if endpoint is defined
-        if (!endpoint) {
+        // Check if ApiQueueScheduler is defined
+        if (!ApiQueueScheduler) {
             return;
         }
 
@@ -123,7 +368,7 @@ const QueueSchedulerList = ({ className, match }) => {
         }
 
         // TODO : Use QueryFilter() => rebuild logic
-        endpoint.getEntities({ offset: page * rowsPerPage, limit: rowsPerPage, page: page, search: search })
+        ApiQueueScheduler.getEntities({ offset: page * rowsPerPage, limit: rowsPerPage, page: page, search: search })
             .then(res => {
                 const entities = res.entities ? res.entities : [];
 
@@ -132,7 +377,7 @@ const QueueSchedulerList = ({ className, match }) => {
                 setState([...state, ...entities])
             })
         // eslint-disable-next-line
-    }, [endpoint, page, rowsPerPage, search]);
+    }, [ApiQueueScheduler, page, rowsPerPage, search]);
 
     useEffect(() => {
         load(indexloaded)
@@ -142,59 +387,7 @@ const QueueSchedulerList = ({ className, match }) => {
         const path = item.id ? `/${item.id}` : '';
 
         history.push(`/queue/scheduler${path}`);
-    };
-
-    const handleLaunchEdit = async (item) => {
-        if (!endpoint.launch) {
-            return;
-        }
-
-        endpoint.launch(item.id)
-            .then(res => {
-                if (!res) {
-                    // flash message
-                    return
-                }
-            })
     }
-
-    const handleClickDisabled = async (item) => {
-        endpoint.disabled(item.id, !item.enabled)
-            .then(res => {
-                if (!res) {
-                    // flash message
-                    return
-                }
-
-                const newState = state.map(row => {
-                    if (item.id === row.id) {
-                        if (row.hasOwnProperty('enabled')) {
-                            row.enabled = !item.enabled;
-                        } else {
-                            row.status = !item.status;
-                        }
-                    }
-
-                    return row;
-                });
-
-                setState(newState); // load();
-            })
-    };
-
-    const handleClickDelete = (item) => {
-        endpoint.delete(item.id)
-            .then(res => {
-                if (!res) {
-                    // flash message
-                    return
-                }
-
-                const newState = state.filter(row => row.id !== item.id);
-
-                setState(newState); // load();
-            })
-    };
 
     // --- events
 
@@ -259,98 +452,32 @@ const QueueSchedulerList = ({ className, match }) => {
 
             <Paper className={classes.root}>
                 <div className={classes.tableWrapper}>
-                    <Table stickyHeader aria-label="sticky table">
+                    <CollapsibleTable
+                        columns={columns}
+                        rows={state}
+                    >
                         <TableHead>
                             <TableRow>
-                                {columns.map(column => (
-                                    <TableCell
+                                <TableCell />
+                                {columns && columns.map((column) => (
+                                    (<TableCell
                                         key={column.id}
-                                        align={column.align}
+                                        align={column.align ? column.align : "inherit"}
                                         style={{ minWidth: column.minWidth, maxWidth: column.hasOwnProperty('maxWidth') ? column.maxWidth : '150px' }}
                                     >
                                         {column.label}
-                                    </TableCell>
+                                    </TableCell>)
                                 ))}
                             </TableRow>
                         </TableHead>
 
                         <TableBody>
-                            {state && state.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row, index) => {
-                                return (
-                                    <TableRow hover role="checkbox" tabIndex={-1} key={row.id}>
-                                        {columns.map(column => {
-                                            if ('ACTIONS' === column.id) {
-                                                return (
-                                                    <TableCell key={column.id} align={column.align}>
-                                                        <Grid item>
-                                                            <ButtonGroup color="primary" size="small" aria-label="small outlined button group">
-                                                                <Button
-                                                                    variant="contained"
-                                                                    color="primary"
-                                                                    className={classes.button}
-                                                                    startIcon={<EditIcon />}
-                                                                    onClick={() => handleClickEdit(row)}
-                                                                >
-                                                                    {""}
-                                                                </Button>
+                            {state && state.map((row, index) => (
+                                <Row key={`${index}-${row.name}`} row={row} />
+                            ))}
 
-                                                                <Button
-                                                                    variant="contained"
-                                                                    className={classes.buttonLaunch}
-                                                                    startIcon={<FlashOnIcon />}
-                                                                    onClick={() => handleLaunchEdit(row)}
-                                                                >
-                                                                    {""}
-                                                                </Button>
-
-                                                                <Button
-                                                                    variant="contained"
-                                                                    color="inherit"
-                                                                    className={classes.button}
-                                                                    startIcon={row.enabled || row.status ? <CheckCircleOutlineIcon style={{ color: green[500] }} /> : <NotInterestedIcon color="secondary" />}
-                                                                    onClick={() => handleClickDisabled(row)}
-                                                                >
-                                                                    {""}
-                                                                </Button>
-
-                                                                <Button
-                                                                    variant="contained"
-                                                                    color="secondary"
-                                                                    className={classes.button}
-                                                                    startIcon={<DeleteIcon />}
-                                                                    onClick={() => handleClickDelete(row)}
-                                                                >
-                                                                    {""}
-                                                                </Button>
-                                                            </ButtonGroup>
-                                                        </Grid>
-                                                    </TableCell>
-                                                )
-                                            }
-
-                                            let value = row[column.id];
-                                            let subObject = column.id.split(".")
-                                            let subObjectLen = subObject.length
-
-                                            if (1 < subObjectLen) {
-                                                value = row[subObject[0]];
-
-                                                for (let i = 1; i < subObjectLen; i++) {
-                                                    value = value[subObject[i]]
-                                                }
-                                            }
-
-                                            return (
-                                                <TableCell key={column.id} align={column.align}>
-                                                    {column.format && typeof value === 'number' ? column.format(value) : value}
-                                                </TableCell>
-                                            );
-                                        })}
-                                    </TableRow>
-                                );
-                            })}
                         </TableBody>
-                    </Table>
+                    </CollapsibleTable>
                 </div>
                 <TablePagination
                     rowsPerPageOptions={[10, 25, 50, 100]}
@@ -372,4 +499,4 @@ const QueueSchedulerList = ({ className, match }) => {
     )
 }
 
-export default QueueSchedulerList;
+export default List;

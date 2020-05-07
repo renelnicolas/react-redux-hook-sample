@@ -12,7 +12,7 @@ import QueueTypeList from '../pages/QueueType/List';
 
 import QueueSchedulerList from '../pages/QueueScheduler/List';
 import QueueSchedulerEdit from '../pages/QueueScheduler/Edit';
-
+import QueueSchedulerDetails from '../pages/QueueScheduler/Details';
 
 import CompanyList from '../pages/Company/List';
 import CompanyEdit from '../pages/Company/Edit';
@@ -60,6 +60,13 @@ export const routes = [
         name: "Scheduler",
         exact: true,
         component: QueueSchedulerEdit,
+        roles: ['ADMIN']
+    },
+    {
+        path: "/queue/scheduler/show/:workId",
+        name: "Scheduler",
+        exact: true,
+        component: QueueSchedulerDetails,
         roles: ['ADMIN']
     },
 
